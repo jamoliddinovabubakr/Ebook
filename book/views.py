@@ -1,7 +1,7 @@
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 
-from .forms import AddBookForm
+from .forms import AddBookForm, AddAuthorForm
 from .models import Book, Author
 
 # Create your views here.
@@ -9,7 +9,8 @@ from .models import Book, Author
 menu = [
     {'title': 'Home', 'url_name': 'home'},
     {'title': 'About', 'url_name': 'about'},
-    {'title': 'Add author', 'url_name': 'add_author'},
+    {'title': 'All Books', 'url_name': 'all_books'},
+    {'title': 'All Authors', 'url_name': 'all_authors'},
     {'title': 'Add book', 'url_name': 'add_book'}
 ]
 
@@ -29,7 +30,15 @@ def about(request):
 
 
 def add_author(request):
-    return HttpResponse('Add author')
+    if request.method == 'POST':
+        form = AddAuthorForm(request.POST)
+        if form.is_valid():
+            Author.objects.create(**form.cleaned_data)
+            return redirect('home')
+    else:
+        form = AddAuthorForm()
+
+    return render(request, 'book/addauthor.html', {'menu': menu, 'title': 'Добавление статьи', 'form': form})
 
 
 def add_book(request):
@@ -46,3 +55,23 @@ def add_book(request):
         'form': form
     }
     return render(request, 'book/addbook.html', context=context)
+
+
+def all_authors(request):
+    authors = Author.objects.all()
+    context = {
+        'title': 'All Authors',
+        'menu': menu,
+        'authors': authors
+    }
+    return render(request, 'book/allauthors.html', context=context)
+
+
+def all_books(request):
+    books = Book.objects.all()
+    context = {
+        'title': 'All Books',
+        'menu': menu,
+        'books': books
+    }
+    return render(request, 'book/allbooks.html', context=context)
